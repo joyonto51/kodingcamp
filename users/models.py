@@ -1,7 +1,9 @@
+import uuid
 from datetime import datetime, date
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import JSONField
 
 
 ##### Managers Start ######
@@ -28,28 +30,37 @@ class UserManager(models.Manager):
 ##### Managers End ######
 
 
-class BaseUserProfile(models.Model):
+class UserProfileBasic(models.Model):
     auth = models.OneToOneField(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=50, help_text="user's full name")
-    email = models.EmailField()
     contact = models.CharField(max_length=11)
-    created_at = models.DateTimeField()
-    updated_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+    address = models.TextField()
+    status = models.CharField(max_length=45, blank=True, null=True)
+    gravatar = models.CharField(max_length=200, blank=True, null=True)
+    guid = models.UUIDField(default=uuid.uuid4, editable=False)
 
     class Meta:
         abstract = True
 
-    def save(self, *args, **kwargs):
-        if self.id:
-            self.updated_at = datetime.now()
-        super(BaseUserProfile, self).save(*args, **kwargs)
 
+class PersonalProfile(UserProfileBasic):
+    GENDER = (
+        ('M', 'Male'),
+        ('F', 'Female'),
+        ('O', 'Others')
+    )
 
-class IndividualUser(BaseUserProfile):
     date_of_birth = models.DateField()
+    gender = models.CharField(max_length=1, choices=GENDER)
     is_trainer = models.BooleanField(default=False)
-    experience = models.IntegerField(help_text='experience in months', default=0)
-    objects = models.Manager()
+    is_student = models.BooleanField(default=False)
+    education = JSONField(blank=True, null=True)
+    experience = JSONField(blank=True, null=True)
+    experience_years = models.IntegerField(help_text='experience in months', default=0)
+    current_organization = models.TextField(blank=True, null=True)
+    official_contact = models.CharField(max_length=13)
+    # objects = models.Manager()
     user = UserManager()
 
     @property
@@ -57,9 +68,10 @@ class IndividualUser(BaseUserProfile):
         return (date.today() - self.date_of_birth).days
 
     def __str__(self):
-        return self.auth.username
+        return self.auth.first_name + ' ' + self.auth.last_name
 
 
-class OrganizationUser(BaseUserProfile):
+class OrganizationProfile(UserProfileBasic):
     is_training_institute = models.BooleanField(default=False)
     description = models.TextField(null=True, blank=True)
+
