@@ -72,6 +72,15 @@ class PersonalProfile(UserProfileBasic):
 
 
 class OrganizationProfile(UserProfileBasic):
+    title = models.CharField(max_length=100)
     is_training_institute = models.BooleanField(default=False)
     description = models.TextField(null=True, blank=True)
+    industry_type = models.CharField(max_length=50)
+    website = models.URLField(max_length=100, blank=True, null=True)
+    founded_on = models.DateField()
+    company_size = models.CharField(max_length=100)
+    additional_contact = models.CharField(max_length=13, blank=True, null=True)
+    is_approved = models.BooleanField(default=False)
+
+    
 
