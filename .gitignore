@@ -1,3 +1,5 @@
+node_modules/
+
 .vscode/
 .idea/
 # Created by https://www.gitignore.io/api/python,django
